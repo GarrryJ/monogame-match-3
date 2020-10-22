@@ -86,7 +86,6 @@ namespace match_3
         }
 
 
-        //TODO
         private void BoardCheck()
         {
             int match;
@@ -97,7 +96,8 @@ namespace match_3
                 {
                     if (pieces[i, y - 1].type == pieces[i, y].type)
                         match++;
-                    else
+
+                    if (!(pieces[i, y - 1].type == pieces[i, y].type) || y == 7)
                     {
                         if (match > 2)
                         {
@@ -126,7 +126,6 @@ namespace match_3
             }
         }
 
-        //TODO
         private void Destroy(Point point, int match, bool ver)
         {
             if (ver)
