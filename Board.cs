@@ -6,10 +6,12 @@ namespace match_3
 {
     public class Board
     {
+        private Explotion explotion;
         private long gameScore = 0;
         private const int SPEED = 10;
         private Random random;
         private Texture2D texture;
+        private Texture2D textureExplotion;
         private Piece[,] pieces;
         private bool pieceChanged;
         private Point pos;
@@ -17,9 +19,10 @@ namespace match_3
         public bool IsInit {get; set;}
         
 
-        public Board(Texture2D texture){
+        public Board(Texture2D texture, Texture2D textureExplotion){
             pieces = new Piece[8, 8];
             this.texture = texture;
+            this.textureExplotion = textureExplotion;
             random = new Random();
             IsInit = false;
             isEnableToTap = false;
@@ -137,11 +140,13 @@ namespace match_3
 
         private void Destroy(Point point, int match, bool ver)
         {
+            explotion.IsBoom = true;
             gameScore += (100 * match + (match - 3) * 25);
             if (ver)
             {
                 for (int i = 0; i < match; i++)
                 {
+                    explotion.boomList.Add(pieces[point.X, point.Y - i].point);
                     pieces[point.X, point.Y - i].type = Type.Nothing;
                 }
             }
@@ -149,6 +154,7 @@ namespace match_3
             {
                 for (int i = 0; i < match; i++)
                 {
+                    explotion.boomList.Add(pieces[point.X - i, point.Y].point);
                     pieces[point.X - i, point.Y].type = Type.Nothing;
                 }
             }
@@ -243,6 +249,7 @@ namespace match_3
         }
         public void Init()
         {
+            explotion = new Explotion();
             gameScore = 0;
             pos = new Point(-1, -1);
             pieceChanged = false;
@@ -314,12 +321,18 @@ namespace match_3
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
                 {
+                    spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(0, 500, 100, 100), Color.White);
                     if (i == pos.X && j == pos.Y && pieceChanged)
                     {
                         spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(100, 300, 100, 100), Color.White);
                     }
                     spriteBatch.Draw(texture, new Vector2(pieces[i, j].point.X, pieces[i, j].point.Y), TextureType(pieces[i,j]), Color.White);
                 }
+            if (explotion.IsBoom)
+            {
+                Rectangle rectangle = explotion.TextureRect();
+                explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Vector2(p.X - 20, p.Y - 20), rectangle, Color.White));
+            }
         }
     }
 }

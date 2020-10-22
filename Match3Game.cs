@@ -9,6 +9,7 @@ namespace match_3
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private Texture2D texture;
+        private Texture2D textureExplotion;
         private MouseState currentMouseState;
 
         private Board board;
@@ -35,7 +36,8 @@ namespace match_3
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             texture = Content.Load<Texture2D>("assets_candy");
-            board = new Board(texture);
+            textureExplotion = Content.Load<Texture2D>("explotion");
+            board = new Board(texture, textureExplotion);
         }
 
         protected override void Update(GameTime gameTime)
