@@ -2,3 +2,4 @@ bin/
 obj/
 Content/bin/
 Content/obj/
+.vscode/
