@@ -6,6 +6,7 @@ namespace match_3
 {
     public class Board
     {
+        private long gameScore = 0;
         private const int SPEED = 10;
         private Random random;
         private Texture2D texture;
@@ -99,9 +100,13 @@ namespace match_3
 
                     if (!(pieces[i, y - 1].type == pieces[i, y].type) || y == 7)
                     {
-                        if (match > 2)
+                        if (match > 2 && pieces[i, y - 1].type != Type.Nothing)
                         {
-                            Destroy(new Point(i, y - 1), match, true);
+                            if (y == 7 && pieces[i, y - 1].type == pieces[i, y].type)
+                                Destroy(new Point(i, y), match, true);
+                            else
+                                Destroy(new Point(i, y - 1), match, true);
+                            BoardCheck();
                             return;
                         }
                         match = 1;
@@ -115,9 +120,13 @@ namespace match_3
                     
                     if (!(pieces[x - 1, i].type == pieces[x, i].type) || x == 7)
                     {
-                        if (match > 2)
+                        if (match > 2 && pieces[x - 1, i].type != Type.Nothing)
                         {
-                            Destroy(new Point(x - 1, i), match, false);
+                            if (x == 7 && pieces[x - 1, i].type == pieces[x, i].type)
+                                Destroy(new Point(x , i), match, false);
+                            else
+                                Destroy(new Point(x - 1, i), match, false);
+                            BoardCheck();
                             return;
                         }
                         match = 1;
@@ -128,6 +137,7 @@ namespace match_3
 
         private void Destroy(Point point, int match, bool ver)
         {
+            gameScore += (100 * match + (match - 3) * 25);
             if (ver)
             {
                 for (int i = 0; i < match; i++)
@@ -142,7 +152,7 @@ namespace match_3
                     pieces[point.X - i, point.Y].type = Type.Nothing;
                 }
             }
-            BoardFill();
+            Console.WriteLine(gameScore);
         }
 
         private void BoardFill()
@@ -233,6 +243,7 @@ namespace match_3
         }
         public void Init()
         {
+            gameScore = 0;
             pos = new Point(-1, -1);
             pieceChanged = false;
             isEnableToTap = true;
@@ -296,7 +307,10 @@ namespace match_3
         {
             RefreshBoard();
             if (isEnableToTap)
+            {
                 BoardCheck();
+                BoardFill();
+            }
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
                 {
