@@ -146,16 +146,30 @@ namespace match_3
             {
                 for (int i = 0; i < match; i++)
                 {
-                    explotion.boomList.Add(pieces[point.X, point.Y - i].point);
-                    pieces[point.X, point.Y - i].type = Type.Nothing;
+                    if (match == 4 && i == (match + 1)/2)
+                        pieces[point.X, point.Y - i].ver = true;
+                    else if (match == 5 && i == (match + 1)/2)
+                        pieces[point.X, point.Y - i].type = Type.Bomb;
+                    else
+                    {
+                        explotion.boomList.Add(pieces[point.X, point.Y - i].point);
+                        pieces[point.X, point.Y - i].type = Type.Nothing;
+                    }
                 }
             }
             else
             {
                 for (int i = 0; i < match; i++)
                 {
+                    if (match == 4 && i == (match + 1)/2)
+                        pieces[point.X - i, point.Y].hor = true;
+                    else if (match == 5 && i == (match + 1)/2)
+                        pieces[point.X - i, point.Y].type = Type.Bomb;
+                    else
+                    {
                     explotion.boomList.Add(pieces[point.X - i, point.Y].point);
                     pieces[point.X - i, point.Y].type = Type.Nothing;
+                    }
                 }
             }
             Console.WriteLine(gameScore);
@@ -195,7 +209,7 @@ namespace match_3
 
             SimpleSwap(posFirst, posSecond);
 
-            if (!(SwapCheck(posFirst) || SwapCheck(posSecond)))
+            if ((!(SwapCheck(posFirst) || SwapCheck(posSecond))))
             {
                 isEnableToTap = true;
                 SimpleSwap(posFirst, posSecond);
