@@ -9,6 +9,11 @@ namespace match_3
         public bool IsBoom {get; set;}
         private int ticCounter;
 
+        public bool TicForScore()
+        {
+            return ticCounter == 4;
+        }
+
         public Explotion()
         {
             boomList = new List<Point>(64);

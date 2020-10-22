@@ -11,6 +11,7 @@ namespace match_3
         private Texture2D texture;
         private Texture2D textureExplotion;
         private MouseState currentMouseState;
+        private SpriteFont font;
 
         private Board board;
 
@@ -37,6 +38,7 @@ namespace match_3
             spriteBatch = new SpriteBatch(GraphicsDevice);
             texture = Content.Load<Texture2D>("assets_candy");
             textureExplotion = Content.Load<Texture2D>("explotion");
+            font = Content.Load<SpriteFont>("score"); 
             board = new Board(texture, textureExplotion);
         }
 
@@ -66,6 +68,7 @@ namespace match_3
             spriteBatch.Begin();
 
             board.Draw(gameTime, spriteBatch);
+            spriteBatch.DrawString(font, board.GameScore.ToString(), new Vector2(10, 10), Color.Black);
             
             spriteBatch.End();
             base.Draw(gameTime);

@@ -7,25 +7,25 @@ namespace match_3
     public class Board
     {
         private Explotion explotion;
-        private long gameScore = 0;
         private const int SPEED = 10;
         private Random random;
         private Texture2D texture;
         private Texture2D textureExplotion;
         private Piece[,] pieces;
         private bool pieceChanged;
-        private Point pos;
+        private Bomb replacedBomb;
+        private Point changePos;
         private bool isEnableToTap;
         public bool IsInit {get; set;}
+        public long GameScore {get; set;}
         
 
         public Board(Texture2D texture, Texture2D textureExplotion){
-            pieces = new Piece[8, 8];
             this.texture = texture;
             this.textureExplotion = textureExplotion;
-            random = new Random();
             IsInit = false;
-            isEnableToTap = false;
+            pieces = new Piece[8, 8];
+            random = new Random();
         }
 
         private Rectangle TextureType(Piece piece)
@@ -92,6 +92,11 @@ namespace match_3
 
         private void BoardCheck()
         {
+            if (replacedBomb.IsReplaced)
+            {   
+                BombDestroy(replacedBomb.point);
+                replacedBomb.IsReplaced = false;
+            }
             int match;
             for (int i = 0; i < 8; i++)
             {
@@ -106,9 +111,9 @@ namespace match_3
                         if (match > 2 && pieces[i, y - 1].type != Type.Nothing)
                         {
                             if (y == 7 && pieces[i, y - 1].type == pieces[i, y].type)
-                                Destroy(new Point(i, y), match, true);
+                                MatchDestroy(new Point(i, y), match, true);
                             else
-                                Destroy(new Point(i, y - 1), match, true);
+                                MatchDestroy(new Point(i, y - 1), match, true);
                             BoardCheck();
                             return;
                         }
@@ -126,9 +131,9 @@ namespace match_3
                         if (match > 2 && pieces[x - 1, i].type != Type.Nothing)
                         {
                             if (x == 7 && pieces[x - 1, i].type == pieces[x, i].type)
-                                Destroy(new Point(x , i), match, false);
+                                MatchDestroy(new Point(x , i), match, false);
                             else
-                                Destroy(new Point(x - 1, i), match, false);
+                                MatchDestroy(new Point(x - 1, i), match, false);
                             BoardCheck();
                             return;
                         }
@@ -138,10 +143,35 @@ namespace match_3
             }
         }
 
-        private void Destroy(Point point, int match, bool ver)
+        private void Destroy(Point point)
         {
             explotion.IsBoom = true;
-            gameScore += (100 * match + (match - 3) * 25);
+            explotion.boomList.Remove(point);
+            explotion.boomList.Add(pieces[point.X, point.Y].point);
+            if (pieces[point.X, point.Y].type == Type.Bomb)
+                BombDestroy(point);
+            else
+                pieces[point.X, point.Y].type = Type.Nothing;
+        }
+
+        private void BombDestroy(Point point)
+        {
+            pieces[point.X, point.Y].type = Type.Nothing;
+            point.X--;
+            point.Y--;
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    if (i >= 0 && j >= 0 && i < 8 && j < 8)
+                        Destroy(new Point(point.X + i, point.Y + j));
+        }
+
+        private void IncGameScore(int b)
+        {
+            GameScore += (100 * b + (b - 3) * 25);
+        }
+
+        private void MatchDestroy(Point point, int match, bool ver)
+        {
             if (ver)
             {
                 for (int i = 0; i < match; i++)
@@ -151,10 +181,7 @@ namespace match_3
                     else if (match == 5 && i == (match + 1)/2)
                         pieces[point.X, point.Y - i].type = Type.Bomb;
                     else
-                    {
-                        explotion.boomList.Add(pieces[point.X, point.Y - i].point);
-                        pieces[point.X, point.Y - i].type = Type.Nothing;
-                    }
+                        Destroy(new Point(point.X, point.Y - i));
                 }
             }
             else
@@ -166,13 +193,9 @@ namespace match_3
                     else if (match == 5 && i == (match + 1)/2)
                         pieces[point.X - i, point.Y].type = Type.Bomb;
                     else
-                    {
-                    explotion.boomList.Add(pieces[point.X - i, point.Y].point);
-                    pieces[point.X - i, point.Y].type = Type.Nothing;
-                    }
+                        Destroy(new Point(point.X - i, point.Y));
                 }
             }
-            Console.WriteLine(gameScore);
         }
 
         private void BoardFill()
@@ -209,7 +232,19 @@ namespace match_3
 
             SimpleSwap(posFirst, posSecond);
 
-            if ((!(SwapCheck(posFirst) || SwapCheck(posSecond))))
+            if (pieces[posFirst.X, posFirst.Y].type == Type.Bomb)
+            {   
+                replacedBomb.point = posFirst;
+                replacedBomb.IsReplaced = true;
+                return;
+            }
+            else if (pieces[posSecond.X, posSecond.Y].type == Type.Bomb)
+            {   
+                replacedBomb.point = posSecond;
+                replacedBomb.IsReplaced = true;
+                return;
+            }
+            else if ((!(SwapCheck(posFirst) || SwapCheck(posSecond))))
             {
                 isEnableToTap = true;
                 SimpleSwap(posFirst, posSecond);
@@ -263,9 +298,10 @@ namespace match_3
         }
         public void Init()
         {
+            replacedBomb = new Bomb();
             explotion = new Explotion();
-            gameScore = 0;
-            pos = new Point(-1, -1);
+            GameScore = 0;
+            changePos = new Point(-1, -1);
             pieceChanged = false;
             isEnableToTap = true;
             IsInit = true;
@@ -301,16 +337,16 @@ namespace match_3
             if (x > 100 && x < 900 && y > 100 && y < 900 && isEnableToTap)
             {
                 Point newPos = new Point(x/100 - 1, y/100 - 1);
-                if (pieceChanged && ( (pos.X == newPos.X && Math.Abs(pos.Y - newPos.Y) == 1) || (pos.Y == newPos.Y && Math.Abs(pos.X - newPos.X) == 1) ))
+                if (pieceChanged && ( (changePos.X == newPos.X && Math.Abs(changePos.Y - newPos.Y) == 1) || (changePos.Y == newPos.Y && Math.Abs(changePos.X - newPos.X) == 1) ))
                 {
-                    Swap(pos, newPos);
+                    Swap(changePos, newPos);
                     pieceChanged = false;
                 } 
                 else 
                 {
                     pieceChanged = true;
-                    pos.X = x/100 - 1;
-                    pos.Y = y/100 - 1;
+                    changePos.X = x/100 - 1;
+                    changePos.Y = y/100 - 1;
                 }
             }
             else
@@ -336,7 +372,7 @@ namespace match_3
                 for (int j = 0; j < 8; j++)
                 {
                     spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(0, 500, 100, 100), Color.White);
-                    if (i == pos.X && j == pos.Y && pieceChanged)
+                    if (i == changePos.X && j == changePos.Y && pieceChanged)
                     {
                         spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(100, 300, 100, 100), Color.White);
                     }
@@ -344,6 +380,8 @@ namespace match_3
                 }
             if (explotion.IsBoom)
             {
+                if (explotion.TicForScore())
+                    IncGameScore(explotion.boomList.Count);
                 Rectangle rectangle = explotion.TextureRect();
                 explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Vector2(p.X - 20, p.Y - 20), rectangle, Color.White));
             }
