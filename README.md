@@ -9,6 +9,6 @@ dotnet run
 Control:
 - Left Mouse Button - selection of pieces to move;
 - Right Mouse Button - remove selection;
-- Middle Mouse Button - board update;
+- Esc - go to menu;
 
 ##### [Free asset](https://assetsdownload.com/free-candy-match-3-assets/) was used

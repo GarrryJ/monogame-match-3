@@ -52,8 +52,8 @@ namespace match_3
             MouseState lastMouseState = currentMouseState;
             currentMouseState = Mouse.GetState();
 
-            if (currentMouseState.MiddleButton == ButtonState.Pressed && lastMouseState.MiddleButton == ButtonState.Released)
-                board.Init();
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+                    board.Init();
 
             if (board.GameMode == Mode.Game)
             {
