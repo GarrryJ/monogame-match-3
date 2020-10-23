@@ -11,6 +11,7 @@ namespace match_3
         private Texture2D texture;
         private Texture2D background;
         private Texture2D textureExplotion;
+        private KeyboardState currentKeyboardState;
         private MouseState currentMouseState;
         private SpriteFont font;
 
@@ -46,8 +47,28 @@ namespace match_3
 
         protected override void Update(GameTime gameTime)
         {
+            
             if (!board.IsInit)
                 board.Init();
+
+            KeyboardState lastKeyboardState = currentKeyboardState;
+            currentKeyboardState = Keyboard.GetState();
+
+            if (lastKeyboardState.IsKeyDown(Keys.F) && currentKeyboardState.IsKeyUp(Keys.F))
+            {
+                board.ScreenResize();
+                if (board.SmallScreen)
+                {
+                    graphics.PreferredBackBufferHeight = 600;
+                    graphics.PreferredBackBufferWidth = 600;
+                }
+                else
+                {
+                    graphics.PreferredBackBufferHeight = 1000;
+                    graphics.PreferredBackBufferWidth = 1000;
+                }
+                graphics.ApplyChanges();
+            }
 
             MouseState lastMouseState = currentMouseState;
             currentMouseState = Mouse.GetState();
@@ -73,7 +94,10 @@ namespace match_3
             GraphicsDevice.Clear(Color.Aquamarine);
             spriteBatch.Begin();
 
-            spriteBatch.Draw(background, new Vector2(0, 0) , new Rectangle(0, 0, 1000, 1000), Color.White);
+            if (board.SmallScreen)
+                spriteBatch.Draw(background, new Rectangle(0, 0, 600, 600) , new Rectangle(0, 0, 1000, 1000), Color.White);
+            else
+                spriteBatch.Draw(background, new Rectangle(0, 0, 1000, 1000) , new Rectangle(0, 0, 1000, 1000), Color.White);
 
             board.Draw(gameTime, spriteBatch);
             if (board.GameMode == Mode.Game)

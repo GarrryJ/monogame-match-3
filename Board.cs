@@ -6,6 +6,7 @@ namespace match_3
 {
     public class Board
     {
+        public bool SmallScreen {get; set;}
         public Mode GameMode {get; set;}
         private Explotion explotion;
         private const int SPEED = 10;
@@ -24,6 +25,7 @@ namespace match_3
         
 
         public Board(Texture2D texture, Texture2D textureExplotion){
+            SmallScreen = false;
             GameMode = Mode.Menu;
             this.texture = texture;
             this.textureExplotion = textureExplotion;
@@ -444,9 +446,19 @@ namespace match_3
         }
         public void MouseLeftClick(int x, int y)
         {
-            if (x > 100 && x < 900 && y > 100 && y < 900 && isEnableToTap)
+            int devSc;
+            if (SmallScreen)
+                devSc = 500;
+            else
+                devSc = 900;
+            if (x > 100 && x < devSc && y > 100 && y < devSc && isEnableToTap)
             {
-                Point newPos = new Point(x/100 - 1, y/100 - 1);
+                int dev;
+                if (SmallScreen)
+                    dev = 2;
+                else
+                    dev = 1;
+                Point newPos = new Point(x/(100 / dev) - dev, y/(100 / dev) - dev);
                 if (pieceChanged && ( (changePos.X == newPos.X && Math.Abs(changePos.Y - newPos.Y) == 1) || (changePos.Y == newPos.Y && Math.Abs(changePos.X - newPos.X) == 1) ))
                 {
                     Swap(changePos, newPos);
@@ -455,8 +467,8 @@ namespace match_3
                 else 
                 {
                     pieceChanged = true;
-                    changePos.X = x/100 - 1;
-                    changePos.Y = y/100 - 1;
+                    changePos.X = x/(100 / dev) - dev;
+                    changePos.Y = y/(100 / dev) - dev;
                 }
             }
             else
@@ -477,8 +489,25 @@ namespace match_3
             pieceChanged = false;
         }
 
+        public void ScreenResize()
+        {
+            SmallScreen = !SmallScreen;
+        }
+
         private void GameDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            int devInc;
+            int dev;
+            if (SmallScreen)
+            {
+                devInc = 50;
+                dev = 2;
+            }
+            else
+            {
+                devInc = 0;
+                dev = 1;
+            }
             RefreshBoard();
             if (isEnableToTap)
             {
@@ -488,19 +517,19 @@ namespace match_3
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
                 {
-                    spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(0, 500, 100, 100), Color.White);
+                    spriteBatch.Draw(texture, new Rectangle(100 + i * 100 / dev, 100 + j * 100 / dev, 100 / dev, 100 / dev), new Rectangle(0, 500, 100, 100), Color.White);
                     if (i == changePos.X && j == changePos.Y && pieceChanged)
                     {
-                        spriteBatch.Draw(texture, new Vector2(100 + i * 100, 100 + j * 100), new Rectangle(100, 300, 100, 100), Color.White);
+                        spriteBatch.Draw(texture, new Rectangle(100 + i * 100 / dev, 100 + j * 100 / dev, 100 / dev, 100 / dev), new Rectangle(100, 300, 100, 100), Color.White);
                     }
-                    spriteBatch.Draw(texture, new Vector2(pieces[i, j].point.X, pieces[i, j].point.Y), TextureType(pieces[i,j]), Color.White);
+                    spriteBatch.Draw(texture, new Rectangle(pieces[i, j].point.X / dev + devInc, pieces[i, j].point.Y / dev + devInc, 100 / dev, 100 / dev), TextureType(pieces[i,j]), Color.White);
                 }
             if (explotion.IsBoom)
             {
                 if (explotion.TicForScore())
                     IncGameScore(explotion.boomList.Count);
                 Rectangle rectangle = explotion.TextureRect();
-                explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Vector2(p.X - 20, p.Y - 20), rectangle, Color.White));
+                explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Rectangle((p.X - 20) / dev + devInc, (p.Y - 20) / dev + devInc, 140 / dev, 140 / dev), rectangle, Color.White));
             }
         }
 
