@@ -49,10 +49,17 @@
 /processorParam:TextureFormat=Color
 /build:explotion.png
 
-#begin score.spritefont
+#begin font_small.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:score.spritefont
+/build:font_small.spritefont
+
+#begin font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:font.spritefont
 
