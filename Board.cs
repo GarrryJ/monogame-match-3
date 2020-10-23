@@ -111,9 +111,9 @@ namespace match_3
                         if (match > 2 && pieces[i, y - 1].type != Type.Nothing)
                         {
                             if (y == 7 && pieces[i, y - 1].type == pieces[i, y].type)
-                                MatchDestroy(new Point(i, y), match, true);
+                                MatchDestroy(new Point(i, y), match, true, false);
                             else
-                                MatchDestroy(new Point(i, y - 1), match, true);
+                                MatchDestroy(new Point(i, y - 1), match, true, false);
                             BoardCheck();
                             return;
                         }
@@ -131,9 +131,9 @@ namespace match_3
                         if (match > 2 && pieces[x - 1, i].type != Type.Nothing)
                         {
                             if (x == 7 && pieces[x - 1, i].type == pieces[x, i].type)
-                                MatchDestroy(new Point(x , i), match, false);
+                                MatchDestroy(new Point(x , i), match, false, false);
                             else
-                                MatchDestroy(new Point(x - 1, i), match, false);
+                                MatchDestroy(new Point(x - 1, i), match, false, false);
                             BoardCheck();
                             return;
                         }
@@ -141,6 +141,64 @@ namespace match_3
                     }
                 }
             }
+        }
+
+        private bool XFounderAndDestroyer(Point point, bool ver)
+        {
+            int match = -1;
+            int i = 0;
+            
+            if (ver)
+            {
+                while (point.X - i >= 0)
+                    if (pieces[point.X - i, point.Y].type == pieces[point.X, point.Y].type)
+                    {
+                        i++;
+                        match++;
+                    }
+                    else
+                        break;
+                i = 0;
+                while (point.X + i < 8)
+                    if (pieces[point.X + i, point.Y].type == pieces[point.X, point.Y].type)
+                    {
+                        i++;
+                        match++;
+                    }
+                    else
+                        break;
+            }
+            else
+            {
+                while (point.Y - i >= 0)
+                    if (pieces[point.X, point.Y - i].type == pieces[point.X, point.Y].type)
+                    {
+                        i++;
+                        match++;
+                    }
+                    else
+                        break;
+                i = 0;
+                while (point.Y + i < 8)
+                    if (pieces[point.X, point.Y + i].type == pieces[point.X, point.Y].type)
+                    {
+                        i++;
+                        match++;
+                    }
+                    else
+                        break;
+            }
+            bool res = match >= 3;
+
+            if (res)
+            {
+                if (ver)
+                    MatchDestroy(new Point(point.X + i - 1, point.Y), match, !ver, true);
+                else
+                    MatchDestroy(new Point(point.X, point.Y + i - 1), match, !ver, true);
+            }
+
+            return res;
         }
 
         private void Destroy(Point point)
@@ -170,32 +228,61 @@ namespace match_3
             GameScore += (100 * b + (b - 3) * 25);
         }
 
-        private void MatchDestroy(Point point, int match, bool ver)
+        private void MatchDestroy(Point point, int match, bool ver, bool fromX)
         {
+            bool xCheck = false;
+            Point xPoint = new Point(-1, -1);
             if (ver)
             {
                 for (int i = 0; i < match; i++)
                 {
-                    if (match == 4 && i == (match + 1)/2)
-                        pieces[point.X, point.Y - i].ver = true;
-                    else if (match == 5 && i == (match + 1)/2)
-                        pieces[point.X, point.Y - i].type = Type.Bomb;
-                    else
+                    if (fromX)
                         Destroy(new Point(point.X, point.Y - i));
+                    else
+                    {
+                        xCheck = XFounderAndDestroyer(new Point(point.X, point.Y - i), ver);
+                        if (xCheck)
+                        {
+                            xPoint.X = point.X;
+                            xPoint.Y = point.Y - i;
+                        }
+                        if (match == 4 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X, point.Y - i].ver = true;
+                        else if (match == 5 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X, point.Y - i].type = Type.Bomb;
+                        else
+                            Destroy(new Point(point.X, point.Y - i));
+                    }
                 }
             }
             else
             {
                 for (int i = 0; i < match; i++)
                 {
-                    if (match == 4 && i == (match + 1)/2)
-                        pieces[point.X - i, point.Y].hor = true;
-                    else if (match == 5 && i == (match + 1)/2)
-                        pieces[point.X - i, point.Y].type = Type.Bomb;
-                    else
+                    if (fromX)
                         Destroy(new Point(point.X - i, point.Y));
+                    else
+                    {
+                        xCheck = XFounderAndDestroyer(new Point(point.X - i, point.Y), ver);
+                        if (xCheck)
+                        {
+                            xPoint.X = point.X - i;
+                            xPoint.Y = point.Y;
+                        }
+                        if (match == 4 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X - i, point.Y].hor = true;
+                        else if (match == 5 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X - i, point.Y].type = Type.Bomb;
+                        else
+                            Destroy(new Point(point.X - i, point.Y));
+                    }
                 }
             }
+            if (xPoint.X != -1)
+            {
+                pieces[xPoint.X, xPoint.Y].type = Type.Bomb;
+            }
+                
         }
 
         private void BoardFill()
