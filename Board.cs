@@ -151,8 +151,9 @@ namespace match_3
 
         private bool XFounderAndDestroyer(Point point, bool ver)
         {
-            if (pieces[point.X, point.Y].type == Type.Nothing)
+            if (Type.Nothing == pieces[point.X, point.Y].type)
                 return false;
+
             int match = -1;
             int i = 0;
             
