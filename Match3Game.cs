@@ -9,6 +9,7 @@ namespace match_3
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private Texture2D texture;
+        private Texture2D background;
         private Texture2D textureExplotion;
         private MouseState currentMouseState;
         private SpriteFont font;
@@ -36,6 +37,7 @@ namespace match_3
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            background = Content.Load<Texture2D>("background_blur");
             texture = Content.Load<Texture2D>("assets_candy");
             textureExplotion = Content.Load<Texture2D>("explotion");
             font = Content.Load<SpriteFont>("score"); 
@@ -70,6 +72,8 @@ namespace match_3
         {
             GraphicsDevice.Clear(Color.Aquamarine);
             spriteBatch.Begin();
+
+            spriteBatch.Draw(background, new Vector2(0, 0) , new Rectangle(0, 0, 1000, 1000), Color.White);
 
             board.Draw(gameTime, spriteBatch);
             if (board.GameMode == Mode.Game)

@@ -40,6 +40,8 @@ namespace match_3
                 bonus = 100;
             if (piece.ver)
                 bonus = 200;
+            if (piece.coloredBomb)
+                bonus = 600;
             switch(piece.type)
             {
                 case Type.Yellow:
@@ -55,7 +57,7 @@ namespace match_3
                 case Type.Bomb:
                     return new Rectangle(new Point(200, 400), pointSize);
                 default:
-                    return new Rectangle(new Point(600, 600), pointSize);
+                    return new Rectangle(new Point(300, 300), pointSize);
             }
         }
 
