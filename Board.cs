@@ -151,6 +151,8 @@ namespace match_3
 
         private bool XFounderAndDestroyer(Point point, bool ver)
         {
+            if (pieces[point.X, point.Y].type == Type.Nothing)
+                return false;
             int match = -1;
             int i = 0;
             
@@ -212,7 +214,7 @@ namespace match_3
             explotion.IsBoom = true;
             explotion.boomList.Remove(point);
             explotion.boomList.Add(pieces[point.X, point.Y].point);
-            if (pieces[point.X, point.Y].type == Type.Bomb)
+            if (pieces[point.X, point.Y].type == Type.Bomb || pieces[point.X, point.Y].coloredBomb)
                 BombDestroy(point);
             else
                 pieces[point.X, point.Y].type = Type.Nothing;
@@ -221,6 +223,7 @@ namespace match_3
         private void BombDestroy(Point point)
         {
             pieces[point.X, point.Y].type = Type.Nothing;
+            pieces[point.X, point.Y].coloredBomb = false;
             point.X--;
             point.Y--;
             for (int i = 0; i < 3; i++)
@@ -255,7 +258,11 @@ namespace match_3
                         if (match == 4 && i == (match + 1)/2 && !xCheck)
                             pieces[point.X, point.Y - i].ver = true;
                         else if (match == 5 && (new Point(point.X, point.Y - i) == swapFirst || new Point(point.X, point.Y - i) == swapSecond) && !xCheck)
-                            pieces[point.X, point.Y - i].type = Type.Bomb;
+                        {
+                            swapFirst = new Point(-1, -1);
+                            swapSecond = new Point(-1, -1);
+                            pieces[point.X, point.Y - i].coloredBomb = true;
+                        }  
                         else
                             Destroy(new Point(point.X, point.Y - i));
                     }
@@ -278,7 +285,11 @@ namespace match_3
                         if (match == 4 && i == (match + 1)/2 && !xCheck)
                             pieces[point.X - i, point.Y].hor = true;
                         else if (match == 5 && (new Point(point.X - i, point.Y) == swapFirst || new Point(point.X - i, point.Y) == swapSecond) && !xCheck)
-                            pieces[point.X - i, point.Y].type = Type.Bomb;
+                        {
+                            swapFirst = new Point(-1, -1);
+                            swapSecond = new Point(-1, -1);
+                            pieces[point.X - i, point.Y].coloredBomb = true;
+                        }
                         else
                             Destroy(new Point(point.X - i, point.Y));
                     }
