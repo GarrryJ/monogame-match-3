@@ -10,5 +10,6 @@ Control:
 - Left Mouse Button - selection of pieces to move;
 - Right Mouse Button - remove selection;
 - Esc - go to menu;
+- F - resize screen;
 
 ##### [Free asset](https://assetsdownload.com/free-candy-match-3-assets/) was used
