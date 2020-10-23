@@ -6,6 +6,7 @@ namespace match_3
     {
         public Type type {get; set;}
         public Point point;
+        public bool coloredBomb {get; set;}
         public bool ver {get; set;}
         public bool hor {get; set;}
         

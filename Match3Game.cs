@@ -53,12 +53,16 @@ namespace match_3
             if (currentMouseState.MiddleButton == ButtonState.Pressed && lastMouseState.MiddleButton == ButtonState.Released)
                 board.Init();
 
-            if (currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
-                board.MouseLeftClick(currentMouseState.X, currentMouseState.Y);
-
-            if (currentMouseState.RightButton == ButtonState.Pressed && lastMouseState.RightButton == ButtonState.Released)
-                board.MouseRightClick();
-
+            if (board.GameMode == Mode.Game)
+            {
+                if (currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
+                    board.MouseLeftClick(currentMouseState.X, currentMouseState.Y);
+                if (currentMouseState.RightButton == ButtonState.Pressed && lastMouseState.RightButton == ButtonState.Released)
+                    board.MouseRightClick();
+            } else {
+                if (currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
+                    board.NotGameMouseLeftClick();
+            }
             base.Update(gameTime);
         }
 
@@ -68,7 +72,8 @@ namespace match_3
             spriteBatch.Begin();
 
             board.Draw(gameTime, spriteBatch);
-            spriteBatch.DrawString(font, board.GameScore.ToString(), new Vector2(10, 10), Color.Black);
+            if (board.GameMode == Mode.Game)
+                spriteBatch.DrawString(font, board.GameScore.ToString(), new Vector2(10, 10), Color.Black);
             
             spriteBatch.End();
             base.Draw(gameTime);

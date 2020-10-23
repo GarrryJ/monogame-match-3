@@ -6,6 +6,7 @@ namespace match_3
 {
     public class Board
     {
+        public Mode GameMode {get; set;}
         private Explotion explotion;
         private const int SPEED = 10;
         private Random random;
@@ -15,12 +16,15 @@ namespace match_3
         private bool pieceChanged;
         private Bomb replacedBomb;
         private Point changePos;
+        private Point swapFirst;
+        private Point swapSecond;
         private bool isEnableToTap;
         public bool IsInit {get; set;}
         public long GameScore {get; set;}
         
 
         public Board(Texture2D texture, Texture2D textureExplotion){
+            GameMode = Mode.Menu;
             this.texture = texture;
             this.textureExplotion = textureExplotion;
             IsInit = false;
@@ -248,7 +252,7 @@ namespace match_3
                         }
                         if (match == 4 && i == (match + 1)/2 && !xCheck)
                             pieces[point.X, point.Y - i].ver = true;
-                        else if (match == 5 && i == (match + 1)/2 && !xCheck)
+                        else if (match == 5 && (new Point(point.X, point.Y - i) == swapFirst || new Point(point.X, point.Y - i) == swapSecond) && !xCheck)
                             pieces[point.X, point.Y - i].type = Type.Bomb;
                         else
                             Destroy(new Point(point.X, point.Y - i));
@@ -271,7 +275,7 @@ namespace match_3
                         }
                         if (match == 4 && i == (match + 1)/2 && !xCheck)
                             pieces[point.X - i, point.Y].hor = true;
-                        else if (match == 5 && i == (match + 1)/2 && !xCheck)
+                        else if (match == 5 && (new Point(point.X - i, point.Y) == swapFirst || new Point(point.X - i, point.Y) == swapSecond) && !xCheck)
                             pieces[point.X - i, point.Y].type = Type.Bomb;
                         else
                             Destroy(new Point(point.X - i, point.Y));
@@ -315,6 +319,8 @@ namespace match_3
         }
         private void Swap(Point posFirst, Point posSecond)
         {
+            swapFirst = posFirst;
+            swapSecond = posSecond;
             isEnableToTap = false;
 
             SimpleSwap(posFirst, posSecond);
@@ -385,6 +391,9 @@ namespace match_3
         }
         public void Init()
         {
+            GameMode = Mode.Menu;
+            swapFirst = new Point(-1, -1);
+            swapSecond = new Point(-1, -1);
             replacedBomb = new Bomb();
             explotion = new Explotion();
             GameScore = 0;
@@ -441,13 +450,20 @@ namespace match_3
                 pieceChanged = false;
             }
         }
+        public void NotGameMouseLeftClick()
+        {
+            if (GameMode == Mode.Menu)
+                GameMode = Mode.Game;
+            else
+                GameMode = Mode.Menu;
+        }
 
         public void MouseRightClick()
         {
             pieceChanged = false;
         }
 
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        private void GameDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             RefreshBoard();
             if (isEnableToTap)
@@ -472,6 +488,18 @@ namespace match_3
                 Rectangle rectangle = explotion.TextureRect();
                 explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Vector2(p.X - 20, p.Y - 20), rectangle, Color.White));
             }
+        }
+
+        private void MenuDraw(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+
+        }
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            if (GameMode== Mode.Game)
+                GameDraw(gameTime, spriteBatch);
+            if (GameMode == Mode.Menu)
+                MenuDraw(gameTime, spriteBatch);
         }
     }
 }
