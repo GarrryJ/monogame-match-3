@@ -219,6 +219,16 @@ namespace match_3
             explotion.boomList.Add(pieces[point.X, point.Y].point);
             if (pieces[point.X, point.Y].type == Type.Bomb || pieces[point.X, point.Y].coloredBomb)
                 BombDestroy(point);
+            else if (pieces[point.X, point.Y].ver)
+            {
+                pieces[point.X, point.Y].ver = false;
+                MatchDestroy(new Point(point.X, 7), 8, true, true);
+            }
+            else if (pieces[point.X, point.Y].hor)
+            {
+                pieces[point.X, point.Y].hor = false;
+                MatchDestroy(new Point(7, point.Y), 8, false, true);
+            }
             else
                 pieces[point.X, point.Y].type = Type.Nothing;
         }
@@ -240,7 +250,7 @@ namespace match_3
             GameScore += (100 * b + (b - 3) * 25);
         }
 
-        private void MatchDestroy(Point point, int match, bool ver, bool fromX)
+        private void MatchDestroy(Point point, int match, bool ver, bool special)
         {
             bool xCheck = false;
             Point xPoint = new Point(-1, -1);
@@ -248,7 +258,7 @@ namespace match_3
             {
                 for (int i = 0; i < match; i++)
                 {
-                    if (fromX)
+                    if (special)
                         Destroy(new Point(point.X, point.Y - i));
                     else
                     {
@@ -275,7 +285,7 @@ namespace match_3
             {
                 for (int i = 0; i < match; i++)
                 {
-                    if (fromX)
+                    if (special)
                         Destroy(new Point(point.X - i, point.Y));
                     else
                     {
