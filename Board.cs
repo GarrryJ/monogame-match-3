@@ -161,7 +161,7 @@ namespace match_3
             point.Y--;
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
-                    if (i >= 0 && j >= 0 && i < 8 && j < 8)
+                    if (point.X + i >= 0 && point.Y + j >= 0 && point.X + i < 8 && point.Y + j < 8)
                         Destroy(new Point(point.X + i, point.Y + j));
         }
 
