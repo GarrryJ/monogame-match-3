@@ -8,6 +8,8 @@ namespace match_3
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private Texture2D textureLightning;
+        private Texture2D textureLightningHor;
         private Texture2D texture;
         private Texture2D background;
         private Texture2D textureExplotion;
@@ -15,6 +17,7 @@ namespace match_3
         private MouseState currentMouseState;
         private SpriteFont font;
         private SpriteFont fontSmall;
+        private bool ok;
 
         private Board board;
 
@@ -42,9 +45,11 @@ namespace match_3
             background = Content.Load<Texture2D>("background_blur");
             texture = Content.Load<Texture2D>("assets_candy");
             textureExplotion = Content.Load<Texture2D>("explotion");
+            textureLightning = Content.Load<Texture2D>("lightning");
+            textureLightningHor = Content.Load<Texture2D>("lightning_hor");
             font = Content.Load<SpriteFont>("font"); 
             fontSmall = Content.Load<SpriteFont>("font_small"); 
-            board = new Board(texture, textureExplotion, background, font, fontSmall);
+            board = new Board(texture, textureExplotion, background, textureLightning, textureLightningHor, font, fontSmall);
         }
 
         protected override void Update(GameTime gameTime)
@@ -76,8 +81,23 @@ namespace match_3
             MouseState lastMouseState = currentMouseState;
             currentMouseState = Mouse.GetState();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
-                    board.Init();
+            if (board.SmallScreen)
+            {
+                if (board.GameMode == Mode.Score && currentMouseState.X >= 0 && currentMouseState.X <= 60 && currentMouseState.Y >= 520)
+                    ok = true;
+                else
+                    ok = false;    
+            }
+            else
+            {
+                if (board.GameMode == Mode.Score && currentMouseState.X >= 0 && currentMouseState.X <= 100 && currentMouseState.Y >= 900)
+                    ok = true;
+                else
+                    ok = false;    
+            }
+
+            if (lastKeyboardState.IsKeyDown(Keys.Escape) && currentKeyboardState.IsKeyUp(Keys.Escape))
+                board.Init();
 
             if (board.GameMode == Mode.Game)
             {
@@ -86,9 +106,13 @@ namespace match_3
                 if (currentMouseState.RightButton == ButtonState.Pressed && lastMouseState.RightButton == ButtonState.Released)
                     board.MouseRightClick();
             } else {
-                if (currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
+                if (currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released && board.GameMode == Mode.Menu)
                     board.NotGameMouseLeftClick();
             }
+
+            if (ok && currentMouseState.LeftButton == ButtonState.Pressed && lastMouseState.LeftButton == ButtonState.Released)
+                board.GameMode = Mode.Menu;
+
             base.Update(gameTime);
         }
 
@@ -98,6 +122,14 @@ namespace match_3
             spriteBatch.Begin();
 
             board.Draw(gameTime, spriteBatch);
+            
+            if (ok)
+            {
+                if (board.SmallScreen)
+                    spriteBatch.DrawString(fontSmall, "ok", new Vector2(10, 520), Color.Green, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                else
+                    spriteBatch.DrawString(font, "ok", new Vector2(20, 900), Color.Green, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);

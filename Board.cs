@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,14 +7,18 @@ namespace match_3
 {
     public class Board
     {
+        private Stopwatch time;
         public bool SmallScreen {get; set;}
         public Mode GameMode {get; set;}
+        private Lightning lightning;
         private Explotion explotion;
         private const int SPEED = 10;
         private Random random;
+        private Texture2D textureLightningHor;
         private Texture2D texture;
         private Texture2D textureExplotion;
         private Texture2D background;
+        private Texture2D textureLightning;
         private SpriteFont font;
         private SpriteFont fontSmall;
         private Piece[,] pieces;
@@ -27,10 +32,12 @@ namespace match_3
         public long GameScore {get; set;}
         
 
-        public Board(Texture2D texture, Texture2D textureExplotion, Texture2D background, SpriteFont font, SpriteFont fontSmall)
+        public Board(Texture2D texture, Texture2D textureExplotion, Texture2D background, Texture2D textureLightning, Texture2D textureLightningHor, SpriteFont font, SpriteFont fontSmall)
         {
             SmallScreen = false;
             GameMode = Mode.Menu;
+            this.textureLightningHor = textureLightningHor;
+            this.textureLightning = textureLightning;
             this.background = background;
             this.font = font;
             this.fontSmall = fontSmall;
@@ -230,11 +237,17 @@ namespace match_3
             {
                 pieces[point.X, point.Y].ver = false;
                 MatchDestroy(new Point(point.X, 7), 8, true, true);
+                lightning.IsBoom = true;
+                lightning.zapList.Remove(new Zap(point, true));
+                lightning.zapList.Add(new Zap(point, true));
             }
             else if (pieces[point.X, point.Y].hor)
             {
                 pieces[point.X, point.Y].hor = false;
                 MatchDestroy(new Point(7, point.Y), 8, false, true);
+                lightning.IsBoom = true;
+                lightning.zapList.Remove(new Zap(point, false));
+                lightning.zapList.Add(new Zap(point, false));
             }
             else
                 pieces[point.X, point.Y].type = Type.Nothing;
@@ -275,14 +288,14 @@ namespace match_3
                             xPoint.X = point.X;
                             xPoint.Y = point.Y - i;
                         }
-                        if (match == 4 && i == (match + 1)/2 && !xCheck)
-                            pieces[point.X, point.Y - i].ver = true;
                         else if (match == 5 && (new Point(point.X, point.Y - i) == swapFirst || new Point(point.X, point.Y - i) == swapSecond) && !xCheck)
                         {
                             swapFirst = new Point(-1, -1);
                             swapSecond = new Point(-1, -1);
                             pieces[point.X, point.Y - i].coloredBomb = true;
                         }  
+                        if (match == 4 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X, point.Y - i].ver = true;
                         else
                             Destroy(new Point(point.X, point.Y - i));
                     }
@@ -302,14 +315,14 @@ namespace match_3
                             xPoint.X = point.X - i;
                             xPoint.Y = point.Y;
                         }
-                        if (match == 4 && i == (match + 1)/2 && !xCheck)
-                            pieces[point.X - i, point.Y].hor = true;
                         else if (match == 5 && (new Point(point.X - i, point.Y) == swapFirst || new Point(point.X - i, point.Y) == swapSecond) && !xCheck)
                         {
                             swapFirst = new Point(-1, -1);
                             swapSecond = new Point(-1, -1);
                             pieces[point.X - i, point.Y].coloredBomb = true;
                         }
+                        if (match == 4 && i == (match + 1)/2 && !xCheck)
+                            pieces[point.X - i, point.Y].hor = true;
                         else
                             Destroy(new Point(point.X - i, point.Y));
                     }
@@ -404,6 +417,11 @@ namespace match_3
 
         private void RefreshBoard()
         {
+            if (time.Elapsed.Minutes == 1)
+            {
+                GameMode = Mode.Menu;
+                time.Stop();
+            }
             isEnableToTap = true;
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
@@ -428,12 +446,14 @@ namespace match_3
             swapFirst = new Point(-1, -1);
             swapSecond = new Point(-1, -1);
             replacedBomb = new Bomb();
+            lightning = new Lightning();
             explotion = new Explotion();
             GameScore = 0;
             changePos = new Point(-1, -1);
             pieceChanged = false;
             isEnableToTap = true;
             IsInit = true;
+
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
                 {
@@ -463,6 +483,7 @@ namespace match_3
         }
         public void MouseLeftClick(int x, int y)
         {
+
             int devSc;
             if (SmallScreen)
                 devSc = 500;
@@ -495,10 +516,9 @@ namespace match_3
         }
         public void NotGameMouseLeftClick()
         {
-            if (GameMode == Mode.Menu)
-                GameMode = Mode.Game;
-            else
-                GameMode = Mode.Menu;
+            GameMode = Mode.Game;
+            time = new Stopwatch();
+            time.Start();
         }
 
         public void MouseRightClick()
@@ -541,6 +561,25 @@ namespace match_3
                     }
                     spriteBatch.Draw(texture, new Rectangle(pieces[i, j].point.X / dev + devInc, pieces[i, j].point.Y / dev + devInc, 100 / dev, 100 / dev), TextureType(pieces[i,j]), Color.White);
                 }
+
+            if (lightning.IsBoom)
+            {
+                Rectangle rectangle;
+                foreach (Zap z in lightning.zapList)
+                {
+                    explotion.boomList.Remove(new Point(z.point.X * 100 + 100, z.point.Y * 100 + 100));
+                    rectangle = lightning.TextureRect(z.ver);
+                    if (z.ver)
+                    {
+                        spriteBatch.Draw(textureLightning, new Rectangle(z.point.X * 100 / dev + 100, 100, 100 / dev, 800 / dev), rectangle, Color.White);
+                    }
+                    else
+                    {
+                        spriteBatch.Draw(textureLightningHor, new Rectangle(100, z.point.Y * 100 / dev + 100, 800 / dev, 100 / dev), rectangle, Color.White);
+                    }
+                }
+                lightning.zapList.Clear();
+            }
             if (explotion.IsBoom)
             {
                 if (explotion.TicForScore())
@@ -548,15 +587,48 @@ namespace match_3
                 Rectangle rectangle = explotion.TextureRect();
                 explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Rectangle((p.X - 20) / dev + devInc, (p.Y - 20) / dev + devInc, 140 / dev, 140 / dev), rectangle, Color.White));
             }
+            
             if (SmallScreen)
-                    spriteBatch.DrawString(fontSmall, GameScore.ToString(), new Vector2(100, 35), Color.LightGoldenrodYellow);
-                else
-                    spriteBatch.DrawString(font, GameScore.ToString(), new Vector2(100, 10), Color.LightGoldenrodYellow);
+            {
+                spriteBatch.DrawString(fontSmall, GameScore.ToString(), new Vector2(100, 35), Color.LightGoldenrodYellow);
+                if (time.Elapsed.Minutes < 1)
+                    spriteBatch.DrawString(fontSmall, (60 - time.Elapsed.Seconds).ToString(), new Vector2(445, 35), Color.Blue);
+            }
+            else
+            {
+                spriteBatch.DrawString(font, GameScore.ToString(), new Vector2(100, 10), Color.LightGoldenrodYellow);
+                if (time.Elapsed.Minutes < 1)
+                    spriteBatch.DrawString(font, (60 - time.Elapsed.Seconds).ToString(), new Vector2(820, 10), Color.LightGoldenrodYellow);
+            }
         }
 
         private void MenuDraw(GameTime gameTime, SpriteBatch spriteBatch)
+        {   
+            if (SmallScreen)
+            {
+                spriteBatch.DrawString(fontSmall, "well done :)", new Vector2(50, 310), Color.DarkBlue, -0.333F, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(fontSmall, "rly", new Vector2(120, 320), Color.BlueViolet, -0.333F, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
+            }
+            else
+            {
+                spriteBatch.DrawString(font, "click anywhere to start", new Vector2(0, 620), Color.DarkBlue, -0.333F, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(font, "press F to resize the window", new Vector2(100, 640), Color.BlueViolet, -0.333F, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
+            }
+        }
+        private void ScoreDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-
+            if (SmallScreen)
+            {
+                spriteBatch.DrawString(fontSmall, "ok", new Vector2(10, 520), Color.Red, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(fontSmall, "GAME OVER!", new Vector2(200, 250), Color.DarkBlue, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(fontSmall, "ur score: " + GameScore.ToString(), new Vector2(200, 285), Color.BlueViolet, 0, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
+            }
+            else
+            {
+                spriteBatch.DrawString(font, "GAME OVER!", new Vector2(340, 400), Color.DarkBlue, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(font, "ur score: " + GameScore.ToString(), new Vector2(340, 450), Color.BlueViolet, 0, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
+                spriteBatch.DrawString(font, "ok", new Vector2(20, 900), Color.Red, 0, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+            }
         }
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
@@ -569,6 +641,8 @@ namespace match_3
                 GameDraw(gameTime, spriteBatch);
             if (GameMode == Mode.Menu)
                 MenuDraw(gameTime, spriteBatch);
+            if (GameMode == Mode.Score)
+                ScoreDraw(gameTime, spriteBatch);
         }
     }
 }
