@@ -14,6 +14,7 @@ namespace match_3
         private KeyboardState currentKeyboardState;
         private MouseState currentMouseState;
         private SpriteFont font;
+        private SpriteFont fontSmall;
 
         private Board board;
 
@@ -41,8 +42,9 @@ namespace match_3
             background = Content.Load<Texture2D>("background_blur");
             texture = Content.Load<Texture2D>("assets_candy");
             textureExplotion = Content.Load<Texture2D>("explotion");
-            font = Content.Load<SpriteFont>("score"); 
-            board = new Board(texture, textureExplotion);
+            font = Content.Load<SpriteFont>("font"); 
+            fontSmall = Content.Load<SpriteFont>("font_small"); 
+            board = new Board(texture, textureExplotion, background, font, fontSmall);
         }
 
         protected override void Update(GameTime gameTime)
@@ -59,6 +61,7 @@ namespace match_3
                 board.ScreenResize();
                 if (board.SmallScreen)
                 {
+                    
                     graphics.PreferredBackBufferHeight = 600;
                     graphics.PreferredBackBufferWidth = 600;
                 }
@@ -94,15 +97,8 @@ namespace match_3
             GraphicsDevice.Clear(Color.Aquamarine);
             spriteBatch.Begin();
 
-            if (board.SmallScreen)
-                spriteBatch.Draw(background, new Rectangle(0, 0, 600, 600) , new Rectangle(0, 0, 1000, 1000), Color.White);
-            else
-                spriteBatch.Draw(background, new Rectangle(0, 0, 1000, 1000) , new Rectangle(0, 0, 1000, 1000), Color.White);
-
             board.Draw(gameTime, spriteBatch);
-            if (board.GameMode == Mode.Game)
-                spriteBatch.DrawString(font, board.GameScore.ToString(), new Vector2(10, 10), Color.Black);
-            
+
             spriteBatch.End();
             base.Draw(gameTime);
         }

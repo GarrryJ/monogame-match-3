@@ -13,6 +13,9 @@ namespace match_3
         private Random random;
         private Texture2D texture;
         private Texture2D textureExplotion;
+        private Texture2D background;
+        private SpriteFont font;
+        private SpriteFont fontSmall;
         private Piece[,] pieces;
         private bool pieceChanged;
         private Bomb replacedBomb;
@@ -24,9 +27,13 @@ namespace match_3
         public long GameScore {get; set;}
         
 
-        public Board(Texture2D texture, Texture2D textureExplotion){
+        public Board(Texture2D texture, Texture2D textureExplotion, Texture2D background, SpriteFont font, SpriteFont fontSmall)
+        {
             SmallScreen = false;
             GameMode = Mode.Menu;
+            this.background = background;
+            this.font = font;
+            this.fontSmall = fontSmall;
             this.texture = texture;
             this.textureExplotion = textureExplotion;
             IsInit = false;
@@ -541,6 +548,10 @@ namespace match_3
                 Rectangle rectangle = explotion.TextureRect();
                 explotion.boomList.ForEach(p => spriteBatch.Draw(textureExplotion, new Rectangle((p.X - 20) / dev + devInc, (p.Y - 20) / dev + devInc, 140 / dev, 140 / dev), rectangle, Color.White));
             }
+            if (SmallScreen)
+                    spriteBatch.DrawString(fontSmall, GameScore.ToString(), new Vector2(100, 35), Color.LightGoldenrodYellow);
+                else
+                    spriteBatch.DrawString(font, GameScore.ToString(), new Vector2(100, 10), Color.LightGoldenrodYellow);
         }
 
         private void MenuDraw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -549,6 +560,11 @@ namespace match_3
         }
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            if (SmallScreen)
+                spriteBatch.Draw(background, new Rectangle(0, 0, 600, 600) , new Rectangle(0, 0, 1000, 1000), Color.White);
+            else
+                spriteBatch.Draw(background, new Rectangle(0, 0, 1000, 1000) , new Rectangle(0, 0, 1000, 1000), Color.White);
+                
             if (GameMode== Mode.Game)
                 GameDraw(gameTime, spriteBatch);
             if (GameMode == Mode.Menu)
