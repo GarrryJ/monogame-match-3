@@ -606,8 +606,8 @@ namespace match_3
         {   
             if (SmallScreen)
             {
-                spriteBatch.DrawString(fontSmall, "small screen :)", new Vector2(50, 310), Color.DarkBlue, -0.333F, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
-                spriteBatch.DrawString(fontSmall, "rly smol", new Vector2(120, 320), Color.BlueViolet, -0.333F, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
+                spriteBatch.DrawString(fontSmall, "small screen", new Vector2(50, 310), Color.DarkBlue, -0.333F, new Vector2 (0, 0), 1, new SpriteEffects(), 0);
+                spriteBatch.DrawString(fontSmall, "click somewhere to start pls", new Vector2(120, 320), Color.BlueViolet, -0.333F, new Vector2 (0, 0), 0.5F, new SpriteEffects(), 0);
             }
             else
             {
