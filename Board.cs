@@ -417,11 +417,6 @@ namespace match_3
 
         private void RefreshBoard()
         {
-            if (time.Elapsed.Minutes == 1)
-            {
-                GameMode = Mode.Menu;
-                time.Stop();
-            }
             isEnableToTap = true;
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
@@ -516,9 +511,13 @@ namespace match_3
         }
         public void NotGameMouseLeftClick()
         {
-            GameMode = Mode.Game;
-            time = new Stopwatch();
-            time.Start();
+            if (GameMode == Mode.Menu)
+            {
+                Init();
+                GameMode = Mode.Game;
+                time = new Stopwatch();
+                time.Start();
+            }
         }
 
         public void MouseRightClick()
@@ -600,6 +599,11 @@ namespace match_3
                 if (time.Elapsed.Minutes < 1)
                     spriteBatch.DrawString(font, (60 - time.Elapsed.Seconds).ToString(), new Vector2(820, 10), Color.LightGoldenrodYellow);
             }
+            if (time.Elapsed.Minutes == 1)
+            {
+                GameMode = Mode.Score;
+                time.Stop();
+            }
         }
 
         private void MenuDraw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -642,7 +646,6 @@ namespace match_3
             if (GameMode == Mode.Menu)
             {
                 MenuDraw(gameTime, spriteBatch);
-                GameScore = 0;
             }
             if (GameMode == Mode.Score)
                 ScoreDraw(gameTime, spriteBatch);
