@@ -640,7 +640,10 @@ namespace match_3
             if (GameMode== Mode.Game)
                 GameDraw(gameTime, spriteBatch);
             if (GameMode == Mode.Menu)
+            {
                 MenuDraw(gameTime, spriteBatch);
+                GameScore = 0;
+            }
             if (GameMode == Mode.Score)
                 ScoreDraw(gameTime, spriteBatch);
         }
